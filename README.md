@@ -1,4 +1,4 @@
-# About
+ # About
 
 A simple tool to calculate the overall performance of an investment portfolio.
 
