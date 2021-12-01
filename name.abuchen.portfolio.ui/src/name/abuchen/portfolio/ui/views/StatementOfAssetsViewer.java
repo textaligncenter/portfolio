@@ -90,10 +90,12 @@ import name.abuchen.portfolio.ui.util.AttributeComparator;
 import name.abuchen.portfolio.ui.util.CacheKey;
 import name.abuchen.portfolio.ui.util.Colors;
 import name.abuchen.portfolio.ui.util.LabelOnly;
+import name.abuchen.portfolio.ui.util.SimpleAction;
 import name.abuchen.portfolio.ui.util.viewers.Column;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport.TouchClientListener;
 import name.abuchen.portfolio.ui.util.viewers.ColumnViewerSorter;
+import name.abuchen.portfolio.ui.util.viewers.CopyPasteSupport;
 import name.abuchen.portfolio.ui.util.viewers.OptionLabelProvider;
 import name.abuchen.portfolio.ui.util.viewers.ReportingPeriodColumnOptions;
 import name.abuchen.portfolio.ui.util.viewers.SharesLabelProvider;
@@ -108,6 +110,7 @@ import name.abuchen.portfolio.ui.views.columns.SymbolColumn;
 import name.abuchen.portfolio.ui.views.columns.TaxonomyColumn;
 import name.abuchen.portfolio.ui.views.columns.WknColumn;
 import name.abuchen.portfolio.util.Interval;
+import name.abuchen.portfolio.util.TextUtil;
 
 public class StatementOfAssetsViewer
 {
@@ -163,17 +166,21 @@ public class StatementOfAssetsViewer
         {
             // when flattening, assign sortOrder to keep the tree structure for
             // sorting (only positions within a category are sorted)
-            int sortOrder = 0;
-
+            int sortOrder = 1;
             List<Element> answer = new ArrayList<>();
 
-            Element root = new Element(groupByTaxonomy, Integer.MAX_VALUE);
+            // Show the grand total at both the top & bottom
+            Element totalTop = new Element(groupByTaxonomy, 0);
+            Element totalBottom = new Element(groupByTaxonomy, Integer.MAX_VALUE);
+
+            answer.add(totalTop);
 
             for (AssetCategory cat : groupByTaxonomy.asList())
             {
                 Element category = new Element(groupByTaxonomy, cat, sortOrder);
                 answer.add(category);
-                root.addChild(category);
+                totalTop.addChild(category);
+                totalBottom.addChild(category);
                 sortOrder++;
 
                 for (AssetPosition p : cat.getPositions())
@@ -185,7 +192,7 @@ public class StatementOfAssetsViewer
                 sortOrder++;
             }
 
-            answer.add(root);
+            answer.add(totalBottom);
             return answer;
         }
 
@@ -302,6 +309,7 @@ public class StatementOfAssetsViewer
         assets = new TableViewer(container, SWT.FULL_SELECTION);
         ColumnViewerToolTipSupport.enableFor(assets, ToolTip.NO_RECREATE);
         ColumnEditingSupport.prepare(assets);
+        CopyPasteSupport.enableFor(assets);
 
         ImportFromURLDropAdapter.attach(this.assets.getControl(), owner.getPart());
         ImportFromFileDropAdapter.attach(this.assets.getControl(), owner.getPart());
@@ -899,15 +907,10 @@ public class StatementOfAssetsViewer
         manager.add(new LabelOnly(Messages.LabelTaxonomies));
         for (final Taxonomy t : client.getTaxonomies())
         {
-            Action action = new Action(t.getName())
-            {
-                @Override
-                public void run()
-                {
-                    taxonomy = t;
-                    setInput(model.clientFilter, model.getDate(), model.getCurrencyConverter());
-                }
-            };
+            Action action = new SimpleAction(TextUtil.tooltip(t.getName()), a -> {
+                taxonomy = t;
+                setInput(model.clientFilter, model.getDate(), model.getCurrencyConverter());
+            });
             action.setChecked(t.equals(taxonomy));
             manager.add(action);
         }

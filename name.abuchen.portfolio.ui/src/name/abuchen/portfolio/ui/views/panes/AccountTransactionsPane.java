@@ -56,6 +56,7 @@ import name.abuchen.portfolio.ui.util.viewers.Column;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport.ModificationListener;
 import name.abuchen.portfolio.ui.util.viewers.ColumnViewerSorter;
+import name.abuchen.portfolio.ui.util.viewers.CopyPasteSupport;
 import name.abuchen.portfolio.ui.util.viewers.DateTimeEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.SharesLabelProvider;
 import name.abuchen.portfolio.ui.util.viewers.ShowHideColumnHelper;
@@ -119,10 +120,10 @@ public class AccountTransactionsPane implements InformationPanePage, Modificatio
         TableColumnLayout layout = new TableColumnLayout();
         container.setLayout(layout);
 
-        transactions = new TableViewer(container, SWT.FULL_SELECTION | SWT.MULTI);
+        transactions = new TableViewer(container, SWT.FULL_SELECTION | SWT.MULTI | SWT.VIRTUAL);
         ColumnViewerToolTipSupport.enableFor(transactions, ToolTip.NO_RECREATE);
-
         ColumnEditingSupport.prepare(transactions);
+        CopyPasteSupport.enableFor(transactions);
 
         transactionsColumns = new ShowHideColumnHelper(AccountListView.class.getSimpleName() + "@bottom5", //$NON-NLS-1$
                         view.getPreferenceStore(), transactions, layout);
@@ -345,6 +346,24 @@ public class AccountTransactionsPane implements InformationPanePage, Modificatio
 
         column = new NoteColumn("8"); //$NON-NLS-1$
         column.getEditingSupport().addListener(this);
+        transactionsColumns.addColumn(column);
+
+        column = new Column("source", Messages.ColumnSource, SWT.None, 120); //$NON-NLS-1$
+        column.setLabelProvider(new ColumnLabelProvider()
+        {
+            @Override
+            public String getText(Object e)
+            {
+                return ((AccountTransaction) e).getSource();
+            }
+
+            @Override
+            public Color getForeground(Object element)
+            {
+                return colorFor((AccountTransaction) element);
+            }
+        });
+        ColumnViewerSorter.create(e -> ((AccountTransaction) e).getSource()).attachTo(column); // $NON-NLS-1$
         transactionsColumns.addColumn(column);
 
         transactionsColumns.createColumns();

@@ -76,11 +76,13 @@ import name.abuchen.portfolio.ui.util.BookmarkMenu;
 import name.abuchen.portfolio.ui.util.Colors;
 import name.abuchen.portfolio.ui.util.ConfirmActionWithSelection;
 import name.abuchen.portfolio.ui.util.LogoManager;
+import name.abuchen.portfolio.ui.util.SimpleAction;
 import name.abuchen.portfolio.ui.util.viewers.BooleanEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.Column;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport.ModificationListener;
 import name.abuchen.portfolio.ui.util.viewers.ColumnViewerSorter;
+import name.abuchen.portfolio.ui.util.viewers.CopyPasteSupport;
 import name.abuchen.portfolio.ui.util.viewers.NumberColorLabelProvider;
 import name.abuchen.portfolio.ui.util.viewers.OptionLabelProvider;
 import name.abuchen.portfolio.ui.util.viewers.ReportingPeriodColumnOptions;
@@ -183,6 +185,7 @@ public final class SecuritiesTable implements ModificationListener
 
         ColumnEditingSupport.prepare(securities);
         ColumnViewerToolTipSupport.enableFor(securities, ToolTip.NO_RECREATE);
+        CopyPasteSupport.enableFor(securities);
 
         support = new ShowHideColumnHelper(SecuritiesTable.class.getName(), getClient(), view.getPreferenceStore(),
                         securities, layout);
@@ -926,9 +929,17 @@ public final class SecuritiesTable implements ModificationListener
                 manager.add(new Separator());
                 manager.add(new LinkToPortfolioReport(security));
             }
-        }
 
-        manager.add(new Separator());
+            manager.add(new Separator());
+
+            if (LogoManager.instance().hasCustomLogo(security, getClient().getSettings()))
+            {
+                manager.add(new SimpleAction(Messages.LabelRemoveLogo, a -> {
+                    LogoManager.instance().clearCustomLogo(security, getClient().getSettings());
+                    markDirty();
+                }));
+            }
+        }
 
         // if any retired security in selection, add "unretire/activate all"
         // option

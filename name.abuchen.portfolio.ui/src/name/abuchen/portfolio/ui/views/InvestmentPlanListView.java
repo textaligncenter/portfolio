@@ -45,11 +45,13 @@ import name.abuchen.portfolio.ui.editor.AbstractFinanceView;
 import name.abuchen.portfolio.ui.editor.PortfolioPart;
 import name.abuchen.portfolio.ui.util.DropDown;
 import name.abuchen.portfolio.ui.util.LogoManager;
+import name.abuchen.portfolio.ui.util.SimpleAction;
 import name.abuchen.portfolio.ui.util.viewers.BooleanEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.Column;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport.ModificationListener;
 import name.abuchen.portfolio.ui.util.viewers.ColumnViewerSorter;
+import name.abuchen.portfolio.ui.util.viewers.CopyPasteSupport;
 import name.abuchen.portfolio.ui.util.viewers.DateEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.ListEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.ShowHideColumnHelper;
@@ -136,6 +138,7 @@ public class InvestmentPlanListView extends AbstractFinanceView implements Modif
         plans = new TableViewer(container, SWT.FULL_SELECTION);
 
         ColumnEditingSupport.prepare(plans);
+        CopyPasteSupport.enableFor(plans);
 
         planColumns = new ShowHideColumnHelper(InvestmentPlanListView.class.getSimpleName() + "@top", //$NON-NLS-1$
                         getPreferenceStore(), plans, layout);
@@ -389,6 +392,16 @@ public class InvestmentPlanListView extends AbstractFinanceView implements Modif
         new OpenDialogAction(this, Messages.MenuEditInvestmentPlan) //
                         .type(InvestmentPlanDialog.class, d -> d.setPlan(plan)) //
                         .parameters(plan.getPlanType()).addTo(manager);
+
+        manager.add(new Separator());
+
+        if (LogoManager.instance().hasCustomLogo(plan, getClient().getSettings()))
+        {
+            manager.add(new SimpleAction(Messages.LabelRemoveLogo, a -> {
+                LogoManager.instance().clearCustomLogo(plan, getClient().getSettings());
+                markDirty();
+            }));
+        }
 
         manager.add(new Action(Messages.InvestmentPlanMenuDelete)
         {

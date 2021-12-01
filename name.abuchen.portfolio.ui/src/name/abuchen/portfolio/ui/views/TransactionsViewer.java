@@ -46,6 +46,7 @@ import name.abuchen.portfolio.ui.util.viewers.Column;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport.ModificationListener;
 import name.abuchen.portfolio.ui.util.viewers.ColumnViewerSorter;
+import name.abuchen.portfolio.ui.util.viewers.CopyPasteSupport;
 import name.abuchen.portfolio.ui.util.viewers.DateTimeEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.SharesLabelProvider;
 import name.abuchen.portfolio.ui.util.viewers.ShowHideColumnHelper;
@@ -153,6 +154,7 @@ public final class TransactionsViewer implements ModificationListener
         tableViewer = new TableViewer(container, SWT.FULL_SELECTION | SWT.MULTI | SWT.VIRTUAL);
         ColumnViewerToolTipSupport.enableFor(tableViewer, ToolTip.NO_RECREATE);
         ColumnEditingSupport.prepare(tableViewer);
+        CopyPasteSupport.enableFor(tableViewer);
 
         tableViewer.setUseHashlookup(true);
 
@@ -434,6 +436,11 @@ public final class TransactionsViewer implements ModificationListener
         });
         ColumnViewerSorter.create(e -> ((TransactionPair<?>) e).getTransaction().getNote()).attachTo(column); // $NON-NLS-1$
         new StringEditingSupport(Transaction.class, "note").addListener(this).attachTo(column); //$NON-NLS-1$
+        support.addColumn(column);
+
+        column = new Column("source", Messages.ColumnSource, SWT.None, 200); //$NON-NLS-1$
+        column.setLabelProvider(new TransactionLabelProvider(Transaction::getSource));
+        ColumnViewerSorter.create(e -> ((TransactionPair<?>) e).getTransaction().getSource()).attachTo(column); // $NON-NLS-1$
         support.addColumn(column);
     }
 

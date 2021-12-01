@@ -26,6 +26,11 @@ public class LimitPrice implements Comparable<LimitPrice>
             return operatorString;
         }
 
+        public boolean isGreater()
+        {
+            return this == GREATER_OR_EQUAL || this == GREATER;
+        }
+
         public static Optional<RelationalOperator> findByOperator(String op)
         {
             for (RelationalOperator t : RelationalOperator.values())
@@ -85,12 +90,29 @@ public class LimitPrice implements Comparable<LimitPrice>
         int compare = operator.getOperatorString().compareTo(other.getRelationalOperator().getOperatorString());
         if (compare != 0)
             return compare;
-        return (int) (value - other.getValue());
+        return Long.compare(value, other.getValue());
     }
 
     @Override
     public String toString()
     {
         return operator.getOperatorString() + " " + Values.Quote.format(value); //$NON-NLS-1$
+    }
+
+    public boolean isExceeded(SecurityPrice price)
+    {
+        switch (getRelationalOperator())
+        {
+            case GREATER_OR_EQUAL:
+                return price.getValue() >= getValue();
+            case SMALLER_OR_EQUAL:
+                return price.getValue() <= getValue();
+            case GREATER:
+                return price.getValue() > getValue();
+            case SMALLER:
+                return price.getValue() < getValue();
+            default:
+                return false;
+        }
     }
 }

@@ -429,7 +429,7 @@ public class TimelineChart extends Chart // NOSONAR
             setRedraw(false);
 
             getAxisSet().adjustRange();
-            ChartUtil.addYMargins(this, 0.03);
+            ChartUtil.addYMargins(this, 0.08);
         }
         finally
         {
@@ -441,5 +441,11 @@ public class TimelineChart extends Chart // NOSONAR
     public void save(String filename, int format)
     {
         ChartUtil.save(this, filename, format);
+    }
+
+    @Override
+    public boolean setFocus()
+    {
+        return getPlotArea().setFocus();
     }
 }

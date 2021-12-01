@@ -41,11 +41,13 @@ import name.abuchen.portfolio.ui.handlers.ImportCSVHandler;
 import name.abuchen.portfolio.ui.handlers.ImportPDFHandler;
 import name.abuchen.portfolio.ui.util.ConfirmAction;
 import name.abuchen.portfolio.ui.util.DropDown;
+import name.abuchen.portfolio.ui.util.LogoManager;
 import name.abuchen.portfolio.ui.util.SimpleAction;
 import name.abuchen.portfolio.ui.util.viewers.Column;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport;
 import name.abuchen.portfolio.ui.util.viewers.ColumnEditingSupport.ModificationListener;
 import name.abuchen.portfolio.ui.util.viewers.ColumnViewerSorter;
+import name.abuchen.portfolio.ui.util.viewers.CopyPasteSupport;
 import name.abuchen.portfolio.ui.util.viewers.ShowHideColumnHelper;
 import name.abuchen.portfolio.ui.views.columns.AttributeColumn;
 import name.abuchen.portfolio.ui.views.columns.CurrencyColumn;
@@ -200,6 +202,7 @@ public class AccountListView extends AbstractFinanceView implements Modification
 
         ColumnEditingSupport.prepare(accounts);
         ColumnViewerToolTipSupport.enableFor(accounts, ToolTip.NO_RECREATE);
+        CopyPasteSupport.enableFor(accounts);
 
         accountColumns = new ShowHideColumnHelper(AccountListView.class.getSimpleName() + "@top2", //$NON-NLS-1$
                         getPreferenceStore(), accounts, layout);
@@ -289,6 +292,16 @@ public class AccountListView extends AbstractFinanceView implements Modification
 
         manager.add(new SimpleAction(Messages.AccountMenuImportPDF, a -> ImportPDFHandler.runImport(getPart(),
                         Display.getDefault().getActiveShell(), getClient(), account, null)));
+
+        manager.add(new Separator());
+
+        if (LogoManager.instance().hasCustomLogo(account, getClient().getSettings()))
+        {
+            manager.add(new SimpleAction(Messages.LabelRemoveLogo, a -> {
+                LogoManager.instance().clearCustomLogo(account, getClient().getSettings());
+                markDirty();
+            }));
+        }
 
         manager.add(new SimpleAction(
                         account.isRetired() ? Messages.AccountMenuActivate : Messages.AccountMenuDeactivate, a -> {
